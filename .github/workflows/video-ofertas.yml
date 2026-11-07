@@ -1,0 +1,61 @@
+name: Video de ofertas
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Archivo de video-ofertas/config, sin .json"
+        default: normal
+      modo:
+        description: "prueba (recortes y fotogramas) o completo (video final)"
+        type: choice
+        options: [prueba, completo]
+        default: prueba
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      CONFIG: video-ofertas/config/${{ inputs.version }}.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils ffmpeg
+          pip install -q -r video-ofertas/requirements.txt
+      - name: Recortar tarjetas
+        run: python video-ofertas/recortar.py --config "$CONFIG"
+      - name: Fotogramas de prueba
+        run: python video-ofertas/render.py --config "$CONFIG" --prueba
+      - uses: actions/upload-artifact@v4
+        with:
+          name: revision
+          path: |
+            video-ofertas/trabajo/contacto
+            video-ofertas/trabajo/prueba
+            video-ofertas/trabajo/tarjetas.json
+          retention-days: 7
+      - name: Render completo
+        if: inputs.modo == 'completo'
+        run: python video-ofertas/render.py --config "$CONFIG"
+      - uses: actions/upload-artifact@v4
+        if: inputs.modo == 'completo'
+        with:
+          name: video
+          path: video-ofertas/salida/*.mp4
+          compression-level: 0
+          retention-days: 30
+      - name: Verificar
+        if: inputs.modo == 'completo'
+        run: python video-ofertas/verificar.py video-ofertas/salida/*.mp4
+      - uses: actions/upload-artifact@v4
+        if: inputs.modo == 'completo'
+        with:
+          name: verificacion
+          path: video-ofertas/trabajo/verificacion
+          retention-days: 7

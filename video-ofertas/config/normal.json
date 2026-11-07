@@ -1,0 +1,10 @@
+{
+  "nombre": "lacarry-ofertas-noviembre-2026-normal",
+  "pdfs": ["ofertas/2026-11/cenefas-noviembre-2026.pdf"],
+  "mes": "NOVIEMBRE",
+  "vigencia": "Ofertas válidas del 1/11 al 30/11/2026",
+  "aclaracion": "o hasta agotar stock",
+  "agradecimiento": "¡Gracias por elegirnos!",
+  "minicorte_cada": 20,
+  "ofertas_por_tramo": 20
+}
